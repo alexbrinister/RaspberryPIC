@@ -4,8 +4,11 @@
 #include "../include/config.h"
 #include "../include/servo_motor.h"
 
-// Initialization function for servomotor
-// Initializes the servo to 7.5% duty cycle PWM signal.
+/* 
+ * Initialization function for servomotor
+ * Initializes the servo to 7.5% duty cycle PWM signal. 
+ * This is about 90 degrees.
+ */ 
 void init_servo()
 {
     /* GPIO pin Config for RA5 */
@@ -31,25 +34,34 @@ void init_servo()
     // Write lower 2 bits to the upper 2 bits of PWNxDCL ~7.5% duty cycle.
     PWM6DCL = (DUTY_CYCLE_DEGREES_90 & 0x0003) << 6;
     
-    //Select Timer.
+    // Select Timer 2.
     CCPTMRS1bits.P6TSEL = 1;
     
-    // Configure timer 2 clock.
+    // Configure Timer 2 clock source.
     // Timer 2 set for FOSC/4. (Might not need this!)
     T2CLKCONbits.CS = 0x1;
     
-    // Set for ~20ms period.
-    // Obtained using Equation 19-1 from the PIC16F18857 datasheet (page 286).
-    T2PR = 0xFF;//155;
+    // Set Timer 2 period to maximum
+    // This is required for best resolution.
+    T2PR = 0xFF;
     
-    PIR4bits.TMR2IF = 0;//Clear timer 2 interrupt flag. 
+    // Clear Timer 2 interrupt flag.
+    PIR4bits.TMR2IF = 0;
 
+    /* 
+     * Timer 2 configuration
+     * 1. Output post-scaler set to 1:1.
+     * 2. Clock pre-scaler set to 1:128.
+     * 3. Turn the timer on.
+     */ 
     T2CONbits.OUTPS = 0x0;
     T2CONbits.CKPS = 0b111;
     T2CONbits.ON = 1;    
 }
 
-void move_motor(uint16_t duty_cycle)
+// Move the motor to a certain angle as dictated by the duty cycle
+// TODO: Implement a speed control for this
+void move_motor(uint16_t duty_cycle, float speed)
 {
     uint16_t duty_cycle_ = 0;
     
@@ -69,70 +81,26 @@ void move_motor(uint16_t duty_cycle)
 
 void run_servo()
 {
-    uint16_t data = 0, i;
-    // Initialize pins, ADCC, and oscillator.
-    // Also, set the configuration bits for the PIC16F18857 chip.
+    // Initialize oscillator and servo.
     init_osc();
     init_servo();
 
-    //set reg A for RX and pins RA6 and RA7 for TX
-    TRISAbits.TRISA0 = 1;
-    ANSELAbits.ANSA0 = 0;
+    while (1)
+    {
+        move_motor(DUTY_CYCLE_DEGREES_0, 0);
+        __delay_us(1000000);
+        move_motor(DUTY_CYCLE_DEGREES_30, 0);
+        __delay_us(1000000);
+        move_motor(DUTY_CYCLE_DEGREES_60, 0);
+        __delay_us(1000000);
+        move_motor(DUTY_CYCLE_DEGREES_90, 0);
+        __delay_us(1000000);
+        move_motor(DUTY_CYCLE_DEGREES_120, 0);
+        __delay_us(1000000);
+        move_motor(DUTY_CYCLE_DEGREES_150, 0);
+        __delay_us(1000000);
+        move_motor(DUTY_CYCLE_DEGREES_180, 0);
+        __delay_us(1000000);
 
-    TRISAbits.TRISA1 = 1;
-    ANSELAbits.ANSA1 = 0;
-
-    TRISAbits.TRISA2 = 1;
-    ANSELAbits.ANSA2 = 0;
-
-    TRISAbits.TRISA3 = 1;
-    ANSELAbits.ANSA3 = 0;
-
-    TRISAbits.TRISA4 = 1;
-    ANSELAbits.ANSA4 = 0;
-
-    //set reg C pins for TX
-    TRISAbits.TRISA7 = 0;
-    ANSELAbits.ANSA7 = 0;
-
-    TRISAbits.TRISA6 = 0;
-    ANSELAbits.ANSA6 = 0;
-
-    TRISCbits.TRISC0 = 0;
-    ANSELCbits.ANSC0 = 0;
-
-    TRISCbits.TRISC1 = 0;
-    ANSELCbits.ANSC1 = 0;
-
-    //New code that will loop unless interrupted by strobe pin.
-    int delayCount = 0;
-    int total_ms = 1000;
-    int stop = 0;
-
-    while (1) {//do these instructions forever
-
-        if ((continuousRotation == 2)&&(delayCount == (total_ms))) {
-            move_motor(motorDirection);
-        } else if (continuousRotation == 1) {
-            TRISAbits.TRISA5 = 0;
-            move_motor(motorDirection);
-            __delay_ms(1000);
-            delayCount = 0;
-            continuousRotation = 0;
-            TRISAbits.TRISA5 = 1;
-        }
-
-        if ((continuousRotation == 2)&&(delayCount < 1)) {
-            move_motor(DUTY_CYCLE_DEGREES_0);
-        }
-
-        if (continuousRotation == 2) {
-            TRISAbits.TRISA5 = 0;
-            if (delayCount++ > total_ms * 2) {
-                delayCount = 0;
-            }
-            __delay_ms(1);
-        }
-
-    }//END while
+    }
 }
