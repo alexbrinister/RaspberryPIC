@@ -5,11 +5,8 @@
                    displayName="Header Files"
                    projectFiles="true">
       <logicalFolder name="include" displayName="include" projectFiles="true">
-        <itemPath>include/ldr_read_pin.h</itemPath>
-        <itemPath>include/toggle_led.h</itemPath>
         <itemPath>include/servo_motor.h</itemPath>
         <itemPath>include/config.h</itemPath>
-        <itemPath>include/nibblenet.h</itemPath>
       </logicalFolder>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
@@ -20,12 +17,9 @@
                    displayName="Source Files"
                    projectFiles="true">
       <logicalFolder name="src" displayName="src" projectFiles="true">
-        <itemPath>src/nibblenet.c</itemPath>
         <itemPath>src/main.c</itemPath>
-        <itemPath>src/toggle_led.c</itemPath>
         <itemPath>src/config.c</itemPath>
         <itemPath>src/servo_motor.c</itemPath>
-        <itemPath>src/ldr_read_pin.c</itemPath>
       </logicalFolder>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"

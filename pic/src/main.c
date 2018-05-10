@@ -1,6 +1,6 @@
 #include <xc.h>
 
-#include "../include/nibblenet.h"
+#include "../include/servo_motor.h"
 
 //Global Variable Declaration
 int motorDirection;
@@ -10,7 +10,7 @@ int main(void)
 {    
     motorDirection = 70;
     continuousRotation = 2;
-    startNibbleNet2();
+    run_servo();
     
     return 0;
 }

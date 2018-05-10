@@ -3,7 +3,6 @@
 
 #include "../include/config.h"
 #include "../include/servo_motor.h"
-#include "../include/nibblenet.h"
 
 // Initialization function for servomotor
 // Initializes the servo to 7.5% duty cycle PWM signal.
@@ -66,4 +65,74 @@ void move_motor(uint16_t duty_cycle)
     PWM6DCH = (duty_cycle_ & 0x03FC) >> 2;
     // Write lower 2 bits to the upper 2 bits of PWNxDCL ~5% duty cycle.
     PWM6DCL = (duty_cycle_ & 0x0003) << 6;
+}
+
+void run_servo()
+{
+    uint16_t data = 0, i;
+    // Initialize pins, ADCC, and oscillator.
+    // Also, set the configuration bits for the PIC16F18857 chip.
+    init_osc();
+    init_servo();
+
+    //set reg A for RX and pins RA6 and RA7 for TX
+    TRISAbits.TRISA0 = 1;
+    ANSELAbits.ANSA0 = 0;
+
+    TRISAbits.TRISA1 = 1;
+    ANSELAbits.ANSA1 = 0;
+
+    TRISAbits.TRISA2 = 1;
+    ANSELAbits.ANSA2 = 0;
+
+    TRISAbits.TRISA3 = 1;
+    ANSELAbits.ANSA3 = 0;
+
+    TRISAbits.TRISA4 = 1;
+    ANSELAbits.ANSA4 = 0;
+
+    //set reg C pins for TX
+    TRISAbits.TRISA7 = 0;
+    ANSELAbits.ANSA7 = 0;
+
+    TRISAbits.TRISA6 = 0;
+    ANSELAbits.ANSA6 = 0;
+
+    TRISCbits.TRISC0 = 0;
+    ANSELCbits.ANSC0 = 0;
+
+    TRISCbits.TRISC1 = 0;
+    ANSELCbits.ANSC1 = 0;
+
+    //New code that will loop unless interrupted by strobe pin.
+    int delayCount = 0;
+    int total_ms = 1000;
+    int stop = 0;
+
+    while (1) {//do these instructions forever
+
+        if ((continuousRotation == 2)&&(delayCount == (total_ms))) {
+            move_motor(motorDirection);
+        } else if (continuousRotation == 1) {
+            TRISAbits.TRISA5 = 0;
+            move_motor(motorDirection);
+            __delay_ms(1000);
+            delayCount = 0;
+            continuousRotation = 0;
+            TRISAbits.TRISA5 = 1;
+        }
+
+        if ((continuousRotation == 2)&&(delayCount < 1)) {
+            move_motor(DUTY_CYCLE_DEGREES_0);
+        }
+
+        if (continuousRotation == 2) {
+            TRISAbits.TRISA5 = 0;
+            if (delayCount++ > total_ms * 2) {
+                delayCount = 0;
+            }
+            __delay_ms(1);
+        }
+
+    }//END while
 }

@@ -22,6 +22,7 @@ static const int DUTY_CYCLE_DEGREES_180 = 70;
 
 void init_servo();
 void move_motor(uint16_t duty_cycle);
+void run_servo();
 
 #endif	/* __SERVO_MOTOR_H__ */
 
