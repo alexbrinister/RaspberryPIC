@@ -29,11 +29,6 @@ void init_servo()
     PWM6CONbits.PWM6OUT = 0;
     PWM6CONbits.PWM6POL = 0;
     
-    // Write upper 6 bits to PWMxDCH register ~7.5% duty cycle.
-    PWM6DCH = (DUTY_CYCLE_DEGREES_90 & 0x03FC) >> 2;
-    // Write lower 2 bits to the upper 2 bits of PWNxDCL ~7.5% duty cycle.
-    PWM6DCL = (DUTY_CYCLE_DEGREES_90 & 0x0003) << 6;
-    
     // Select Timer 2.
     CCPTMRS1bits.P6TSEL = 1;
     
@@ -56,27 +51,36 @@ void init_servo()
      */ 
     T2CONbits.OUTPS = 0x0;
     T2CONbits.CKPS = 0b111;
-    T2CONbits.ON = 1;    
+    T2CONbits.ON = 1;
+    
+    duty_cycle_ = DUTY_CYCLE_DEGREES_0;
+    
+    // Start the servomotor at 0 degrees.
+    PWM6DCH = (duty_cycle_ & 0x03FC) >> 2;
+    PWM6DCL = (duty_cycle_ & 0x0003) << 6;
 }
 
 // Move the motor to a certain angle as dictated by the duty cycle
 // TODO: Implement a speed control for this
 void move_motor(uint16_t duty_cycle, float speed)
 {
-    uint16_t duty_cycle_ = 0;
+    uint16_t duty_cycle_max_ = 0;
     
     // Limit the duty cycle to the duty cycle range from 0 to 180 degrees.
     if(duty_cycle >= DUTY_CYCLE_DEGREES_180)
-        duty_cycle_ = DUTY_CYCLE_DEGREES_180;
+        duty_cycle_max_ = DUTY_CYCLE_DEGREES_180;
     else if(duty_cycle <= DUTY_CYCLE_DEGREES_0)
-        duty_cycle_ = DUTY_CYCLE_DEGREES_0;
+        duty_cycle_max_ = DUTY_CYCLE_DEGREES_0;
     else
-        duty_cycle_ = duty_cycle;
+        duty_cycle_max_ = duty_cycle;
     
-    // Write upper 6 bits to PWMxDCH register ~ 5% duty cycle.
-    PWM6DCH = (duty_cycle_ & 0x03FC) >> 2;
-    // Write lower 2 bits to the upper 2 bits of PWNxDCL ~5% duty cycle.
-    PWM6DCL = (duty_cycle_ & 0x0003) << 6;
+    while(duty_cycle_ <= duty_cycle_max_)
+    {
+        PWM6DCH = (duty_cycle_ & 0x03FC) >> 2;
+        PWM6DCL = (duty_cycle_ & 0x0003) << 6;
+        __delay_us((DEFAULT_SPEED_SLEEP_US / speed) / duty_cycle_max_);
+        ++duty_cycle_;
+    }
 }
 
 void run_servo()
@@ -87,19 +91,19 @@ void run_servo()
 
     while (1)
     {
-        move_motor(DUTY_CYCLE_DEGREES_0, 0);
+        move_motor(DUTY_CYCLE_DEGREES_0, 1);
         __delay_us(1000000);
-        move_motor(DUTY_CYCLE_DEGREES_30, 0);
+        move_motor(DUTY_CYCLE_DEGREES_30, 1);
         __delay_us(1000000);
-        move_motor(DUTY_CYCLE_DEGREES_60, 0);
+        move_motor(DUTY_CYCLE_DEGREES_60, 1);
         __delay_us(1000000);
-        move_motor(DUTY_CYCLE_DEGREES_90, 0);
+        move_motor(DUTY_CYCLE_DEGREES_90, 1);
         __delay_us(1000000);
-        move_motor(DUTY_CYCLE_DEGREES_120, 0);
+        move_motor(DUTY_CYCLE_DEGREES_120, 1);
         __delay_us(1000000);
-        move_motor(DUTY_CYCLE_DEGREES_150, 0);
+        move_motor(DUTY_CYCLE_DEGREES_150, 1);
         __delay_us(1000000);
-        move_motor(DUTY_CYCLE_DEGREES_180, 0);
+        move_motor(DUTY_CYCLE_DEGREES_180, 1);
         __delay_us(1000000);
 
     }
