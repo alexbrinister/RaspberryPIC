@@ -3,8 +3,8 @@
     <type>com.microchip.mplab.nbide.embedded.makeproject</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/make-project/1">
-            <name>RaspberryPic</name>
-            <creation-uuid>9c5eb693-0a4c-4320-bc83-ca7edb750835</creation-uuid>
+            <name>Lab4_MPAACII</name>
+            <creation-uuid>e291722e-fef2-42f1-8c8b-16e8f55b19a7</creation-uuid>
             <make-project-type>0</make-project-type>
             <c-extensions>c</c-extensions>
             <cpp-extensions/>
